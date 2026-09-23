@@ -1,0 +1,14 @@
+{
+  "name": "generic-ai-phone-line",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {"start": "node server.js"},
+  "engines": {"node": ">=18"},
+  "dependencies": {
+    "express": "^5.2.1",
+    "yemot-router2": "^6.2.3",
+    "@google/generative-ai": "^0.24.1",
+    "yemot-api": "^3.2.0"
+  }
+}
