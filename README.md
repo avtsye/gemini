@@ -1,3 +1,8 @@
-# Gemini AI Phone Line
+# Generic AI Phone Line — Gemini Audio
 
-Project deployment repository.
+This package is a sanitized generic version of the AI phone-line architecture.
+
+Core flow:
+Yemot recording -> raw audio -> Gemini -> answer -> Yemot/TTS playback.
+
+Set the values in `.env` / Render Environment Variables before deployment.
