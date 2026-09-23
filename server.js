@@ -140,7 +140,8 @@ async function callHandler(call){
     catch(e){logDetailedError('playback',e);await call.id_list_message([{type:'text',data:'מצטער הייתה תקלה בהקראת התשובה'}],{prependToNextAction:true});}
   }
 }
-router.get('/yemot',callHandler);
+router.get('/',callHandler);
+app.use('/yemot',router);
 app.get('/api/conversations',(req,res)=>res.json({conversations:conversationLog,activeCalls:Array.from(activeCalls.values()),totalMessages:conversationLog.length,totalCallers:new Set(conversationLog.map(x=>x.phone)).size,serverTime:new Date().toISOString()}));
 app.get('/health',(req,res)=>res.json({ok:true}));
 app.get('/',(req,res)=>res.type('html').send('<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>AI Phone Line</title></head><body><h1>AI Phone Line Dashboard</h1><p>המערכת מחוברת וממתינה לשיחות</p></body></html>'));
@@ -149,9 +150,10 @@ async function configureYemotStructure(){
   const apiKey=process.env.YEMOT_API_KEY?.trim();
   if(!apiKey){console.log('YEMOT_API_KEY not configured; skipping automatic setup');return;}
   const base='https://www.call2all.co.il/ym/api';
+  const configTimeoutMs = Number(process.env.YEMOT_CONFIG_TIMEOUT_MS || 10000);
   async function updateExtension(path,params){
     const qs=new URLSearchParams({token:apiKey,path,...params});
-    const r=await fetch(`${base}/UpdateExtension?${qs}`);const text=await r.text();
+    const r=await withTimeout(fetch(`${base}/UpdateExtension?${qs}`),configTimeoutMs,'Yemot UpdateExtension');const text=await r.text();
     if(!r.ok)throw new Error(`UpdateExtension HTTP ${r.status}: ${text}`);
     let data;try{data=JSON.parse(text)}catch{data={raw:text}};
     if(data.responseStatus&&data.responseStatus!=='OK')throw new Error(`UpdateExtension failed: ${text}`);
@@ -159,14 +161,20 @@ async function configureYemotStructure(){
   }
   const publicUrl=(process.env.PUBLIC_BASE_URL||'').replace(/\/$/,'');
   if(!publicUrl){console.log('PUBLIC_BASE_URL missing; skipping automatic IVR URL setup');return;}
+  console.log('Configuring Yemot API endpoint:', publicUrl+'/yemot');
   await updateExtension('ivr2:/1',{type:'api',api_link:publicUrl+'/yemot'});
   const voiceMap=(process.env.YEMOT_VOICE_OPTIONS||'1:Elik_2100,2:Jacob,3:ymMale').split(',');
   for(const item of voiceMap){
     const [extension,voice]=item.split(':');if(!extension||!voice)continue;
     await updateExtension(`ivr2:/2/${extension}`,{type:'add_id_to_list',add_id_to_list_location_list:'/ivr',add_id_to_list_key:'voice',add_id_to_list_value:voice,add_id_to_list_value_change:'yes',add_id_to_list_end_goto:'/1',add_id_to_list_error_end_goto:'/2'});
   }
+  console.log('Yemot automatic configuration completed successfully');
 }
 process.on('unhandledRejection',(reason)=>{if(!(reason instanceof ExitError))logDetailedError('Unhandled Rejection',reason)});
 process.on('uncaughtException',(err)=>{if(!(err instanceof ExitError))logDetailedError('Uncaught Exception',err)});
 const port=process.env.PORT||3000;
-app.listen(port,async()=>{console.log('server running on port '+port);await loadConversationLog();await configureYemotStructure();});
+app.listen(port,async()=>{
+  console.log('server running on port '+port);
+  await loadConversationLog();
+  configureYemotStructure().catch(e=>logDetailedError('Yemot automatic configuration',e));
+});
