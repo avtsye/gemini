@@ -1,14 +1,4 @@
-# מה צריך להוסיף
+# Setup
 
-הפרויקט כבר כולל את הקוד והמבנה.
-
-צריך לספק בעצמך:
-1. GEMINI_API_KEYS
-2. YEMOT_API_USERNAME
-3. YEMOT_API_PASSWORD
-4. YEMOT_API_KEY
-5. PUBLIC_BASE_URL של השירות ב-Render
-6. אופציונלי: SUPABASE_URL ו-SUPABASE_KEY לזיכרון קבוע
-7. אופציונלי: הוראת AI מותאמת ב-AI_SYSTEM_INSTRUCTION
-
-ב-GitHub וב-Render אין לשמור סודות בתוך הקוד. משתמשים ב-Environment Variables.
+Required: GEMINI_API_KEYS, YEMOT_API_USERNAME, YEMOT_API_PASSWORD, YEMOT_API_KEY, PUBLIC_BASE_URL.
+Optional: SUPABASE_URL, SUPABASE_KEY, AI_SYSTEM_INSTRUCTION, FIRST_CALL_MESSAGE, GEMINI_MODELS, YEMOT_AUDIO_MIME_TYPE, REQUEST_TIMEOUT_MS, YEMOT_VOICE_OPTIONS.

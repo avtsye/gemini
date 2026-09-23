@@ -6,7 +6,5 @@ create table if not exists public.conversations (
  user_text text not null default '',
  gemini_text text not null default ''
 );
-create index if not exists conversations_phone_created_at_idx
- on public.conversations(phone, created_at desc);
-create index if not exists conversations_created_at_idx
- on public.conversations(created_at desc);
+create index if not exists conversations_phone_created_at_idx on public.conversations(phone, created_at desc);
+create index if not exists conversations_created_at_idx on public.conversations(created_at desc);
